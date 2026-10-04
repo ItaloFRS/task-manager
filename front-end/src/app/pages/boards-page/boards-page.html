@@ -1,0 +1,93 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Quadros</h1>
+      <p class="sub">
+        @if (loading()) { Carregando… }
+        @else if (boards().length === 0) { Nenhum quadro ainda. }
+        @else { {{ boards().length }} {{ boards().length === 1 ? 'quadro' : 'quadros' }} no total. }
+      </p>
+    </div>
+    @if (!creating()) {
+      <button class="btn primary" type="button" (click)="openForm()">Novo quadro</button>
+    }
+  </div>
+
+  @if (error()) {
+    <div class="notice" role="alert">
+      <span>{{ error() }}</span>
+      <button class="btn ghost" type="button" (click)="load()">Tentar de novo</button>
+    </div>
+  }
+
+  <div class="grid">
+    @if (creating()) {
+      <form class="tile form-tile" (ngSubmit)="create()" aria-label="Novo quadro">
+        <div class="field">
+          <label for="b-title">Título</label>
+          <input id="b-title" class="input" name="title" [(ngModel)]="draft.title"
+                 maxlength="100" placeholder="Ex.: Sprint 12" required appAutofocus />
+        </div>
+        <div class="field">
+          <label for="b-desc">Descrição</label>
+          <input id="b-desc" class="input" name="description" [(ngModel)]="draft.description"
+                 placeholder="Opcional" />
+        </div>
+        <div class="field">
+          <label for="b-user">Responsável</label>
+          <input id="b-user" class="input" name="userName" [(ngModel)]="draft.userName"
+                 list="user-names" placeholder="Opcional" />
+          <datalist id="user-names">
+            @for (n of userNames(); track n) { <option [value]="n"></option> }
+          </datalist>
+        </div>
+        <div class="row">
+          <button class="btn primary" type="submit" [disabled]="!draft.title.trim() || saving()">
+            {{ saving() ? 'Criando…' : 'Criar quadro' }}
+          </button>
+          <button class="btn ghost" type="button" (click)="creating.set(false)">Cancelar</button>
+        </div>
+      </form>
+    }
+
+    @for (b of boards(); track b.id) {
+      <article class="tile">
+        <div class="tile-top">
+          <span class="swatch" [attr.data-tone]="tone(b.title)" aria-hidden="true"></span>
+          <button type="button" class="del" [class.armed]="confirming() === b.id" (click)="remove(b)">
+            {{ confirming() === b.id ? 'Confirmar exclusão' : 'Excluir' }}
+          </button>
+        </div>
+
+        <h2 class="tile-title">
+          <a class="tile-link" [routerLink]="['/boards', b.id]">{{ b.title }}</a>
+        </h2>
+        <p class="tile-desc">{{ b.description || 'Sem descrição.' }}</p>
+
+        <div class="tile-foot">
+          <div class="progress" [attr.aria-label]="progress(b.id) + '% concluído'">
+            <span [style.width.%]="progress(b.id)"></span>
+          </div>
+          <div class="foot-line">
+            <span class="count">
+              @if (stats().get(b.id); as s) { {{ s.done }} de {{ s.total }} concluídos }
+              @else { Sem cartões }
+            </span>
+            @if (b.userName) {
+              <span class="owner" [title]="'Responsável: ' + b.userName">
+                <span class="avatar" [attr.data-tone]="tone(b.userName)">{{ initials(b.userName) }}</span>
+              </span>
+            }
+          </div>
+        </div>
+      </article>
+    }
+
+    @if (!loading() && boards().length === 0 && !creating() && !error()) {
+      <div class="empty-tile">
+        <p>Crie o primeiro quadro para começar a organizar os cartões.</p>
+        <button class="btn" type="button" (click)="openForm()">Criar quadro</button>
+      </div>
+    }
+  </div>
+</section>

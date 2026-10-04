@@ -1,0 +1,70 @@
+<div class="scrim" (click)="closed.emit()"></div>
+
+<aside class="drawer" role="dialog" aria-modal="true" aria-label="Editar cartão">
+  <header class="head">
+    <span class="crumb">
+      Cartão
+      @if (card().createdAt) { · criado em {{ longDate(card().createdAt) }} }
+    </span>
+    <button class="icon-btn" type="button" (click)="closed.emit()" aria-label="Fechar">×</button>
+  </header>
+
+  <form class="body" (ngSubmit)="save()">
+    <input class="title-input" name="title" [(ngModel)]="draft.title" maxlength="100"
+           placeholder="Título" aria-label="Título" />
+
+    <div class="field">
+      <label for="d-desc">Descrição</label>
+      <textarea id="d-desc" class="input" name="description" [(ngModel)]="draft.description" rows="5"
+                placeholder="Detalhes, links, o que precisa ser feito…"></textarea>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="d-status">Coluna</label>
+        <select id="d-status" class="input" name="status" [(ngModel)]="draft.status">
+          @for (s of statuses; track s.key) { <option [value]="s.key">{{ s.label }}</option> }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="d-due">Prazo</label>
+        <input id="d-due" class="input" type="date" name="due" [(ngModel)]="draft.due" />
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="label" id="prio-label">Prioridade</span>
+      <div class="seg" role="group" aria-labelledby="prio-label">
+        @for (p of priorities; track p.key) {
+          <button type="button" [class.on]="draft.priority === p.key" [attr.data-p]="p.key"
+                  [attr.aria-pressed]="draft.priority === p.key" (click)="draft.priority = p.key">
+            {{ p.label }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="d-user">Responsável</label>
+      <input id="d-user" class="input" name="assignee" [(ngModel)]="draft.assignee"
+             list="drawer-users" placeholder="Ninguém atribuído" />
+      <datalist id="drawer-users">
+        @for (n of userNames(); track n) { <option [value]="n"></option> }
+      </datalist>
+    </div>
+
+    @if (error()) { <p class="hint bad" role="alert">{{ error() }}</p> }
+
+    <footer class="foot">
+      <button type="button" class="btn danger" [class.armed]="confirmDelete()" (click)="remove()">
+        {{ confirmDelete() ? 'Confirmar exclusão' : 'Excluir' }}
+      </button>
+      <span class="spacer"></span>
+      <button type="button" class="btn ghost" (click)="closed.emit()">Cancelar</button>
+      <button type="submit" class="btn primary" [disabled]="saving()">
+        {{ saving() ? 'Salvando…' : 'Salvar' }}
+      </button>
+    </footer>
+  </form>
+</aside>

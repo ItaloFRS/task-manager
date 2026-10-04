@@ -1,0 +1,93 @@
+<section class="board">
+  <header class="board-head">
+    <a class="back" routerLink="/boards">← Quadros</a>
+
+    @if (board(); as b) {
+      <div class="title-row">
+        <div>
+          <h1>{{ b.title }}</h1>
+          @if (b.description) { <p class="desc">{{ b.description }}</p> }
+        </div>
+        <div class="meta">
+          @if (b.userName) {
+            <span class="owner">
+              <span class="avatar" [attr.data-tone]="tone(b.userName)">{{ initials(b.userName) }}</span>
+              {{ b.userName }}
+            </span>
+          }
+          <span class="tally">{{ done() }} de {{ total() }} concluídos</span>
+        </div>
+      </div>
+    } @else if (loading()) {
+      <h1 class="muted">Carregando…</h1>
+    }
+  </header>
+
+  @if (error()) {
+    <div class="notice" role="alert">
+      <span>{{ error() }}</span>
+      <button class="btn ghost" type="button" (click)="load(id())">Recarregar</button>
+    </div>
+  }
+
+  @if (board()) {
+    <div class="columns" cdkDropListGroup>
+      @for (s of statuses; track s.key) {
+        <section class="column" [attr.data-status]="s.key" [attr.aria-label]="s.label">
+          <header class="col-head">
+            <h2><span class="dot" aria-hidden="true"></span>{{ s.label }}</h2>
+            <span class="badge">{{ columns()[s.key].length }}</span>
+          </header>
+
+          <div class="list" cdkDropList [cdkDropListData]="columns()[s.key]" (cdkDropListDropped)="drop($event)">
+            @for (card of columns()[s.key]; track card.id) {
+              <article class="card" cdkDrag tabindex="0"
+                       (cdkDragStarted)="dragStarted()" (cdkDragEnded)="dragEnded()"
+                       (click)="open(card)" (keydown.enter)="open(card)">
+                <h3 class="card-title">{{ card.title }}</h3>
+                @if (card.description) { <p class="card-desc">{{ card.description }}</p> }
+                <div class="card-meta">
+                  <span class="prio" [attr.data-p]="card.priority">
+                    <i aria-hidden="true"></i>{{ priorityLabel(card.priority) }}
+                  </span>
+                  @if (card.dueDate) {
+                    <span class="due" [class.late]="isOverdue(card)">{{ shortDate(card.dueDate) }}</span>
+                  }
+                  @if (card.assigneeName) {
+                    <span class="avatar" [attr.data-tone]="tone(card.assigneeName)" [title]="card.assigneeName">
+                      {{ initials(card.assigneeName) }}
+                    </span>
+                  }
+                </div>
+              </article>
+            }
+          </div>
+
+          @if (composer() === s.key) {
+            <div class="composer">
+              <textarea class="input" rows="2" name="newCard" [(ngModel)]="draftTitle"
+                        placeholder="Título do cartão" appAutofocus
+                        (keydown.enter)="$event.preventDefault(); addCard(s.key)"
+                        (keydown.escape)="composer.set(null)"></textarea>
+              <div class="composer-actions">
+                <button class="btn primary" type="button" (click)="addCard(s.key)">Adicionar</button>
+                <button class="btn ghost" type="button" (click)="composer.set(null)">Fechar</button>
+              </div>
+            </div>
+          } @else {
+            <button class="add" type="button" (click)="openComposer(s.key)">+ Adicionar cartão</button>
+          }
+        </section>
+      }
+    </div>
+  }
+</section>
+
+@if (selected(); as c) {
+  <app-card-drawer
+    [card]="c"
+    [userNames]="userNames()"
+    (saved)="onSaved($event)"
+    (removed)="onRemoved($event)"
+    (closed)="selected.set(null)" />
+}

@@ -1,0 +1,82 @@
+<section class="page">
+  <div class="page-head">
+    <div>
+      <h1>Usuários</h1>
+      <p class="sub">Pessoas que podem ser responsáveis por quadros e cartões.</p>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="notice" role="alert">
+      <span>{{ error() }}</span>
+      <button class="btn ghost" type="button" (click)="load()">Tentar de novo</button>
+    </div>
+  }
+
+  <div class="layout">
+    <div class="list-wrap">
+      <div class="list-head">
+        <h2>Cadastrados</h2>
+        <span class="badge">{{ users().length }}</span>
+      </div>
+
+      @if (loading()) {
+        <p class="empty">Carregando…</p>
+      } @else if (users().length === 0 && !error()) {
+        <p class="empty">Nenhum usuário ainda. Cadastre o primeiro ao lado.</p>
+      } @else {
+        <ul class="users">
+          @for (u of users(); track u.id) {
+            <li>
+              <span class="avatar lg" [attr.data-tone]="tone(u.name)">{{ initials(u.name) }}</span>
+              <div class="who">
+                <strong>{{ u.name }}</strong>
+                <span>{{ u.email }}</span>
+              </div>
+              <div class="right">
+                <span class="state" [class.off]="!u.active">{{ u.active ? 'Ativo' : 'Inativo' }}</span>
+                @if (u.createdAt) { <span class="since">desde {{ longDate(u.createdAt) }}</span> }
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <form class="panel" #f="ngForm" (ngSubmit)="submit(f)" novalidate>
+      <h2>Novo usuário</h2>
+
+      <div class="field">
+        <label for="u-name">Nome</label>
+        <input id="u-name" class="input" name="name" [(ngModel)]="form.name" #name="ngModel"
+               required maxlength="120" autocomplete="off" />
+        @if (name.invalid && (name.touched || f.submitted)) { <span class="hint bad">Informe o nome.</span> }
+      </div>
+
+      <div class="field">
+        <label for="u-email">E-mail</label>
+        <input id="u-email" class="input" type="email" name="email" [(ngModel)]="form.email" #email="ngModel"
+               required email autocomplete="off" />
+        @if (email.invalid && (email.touched || f.submitted)) { <span class="hint bad">Informe um e-mail válido.</span> }
+      </div>
+
+      <div class="field">
+        <label for="u-senha">Senha</label>
+        <input id="u-senha" class="input" type="password" name="senha" [(ngModel)]="form.senha" #senha="ngModel"
+               required minlength="6" autocomplete="new-password" />
+        @if (senha.invalid && (senha.touched || f.submitted)) {
+          <span class="hint bad">Mínimo de 6 caracteres.</span>
+        } @else {
+          <span class="hint">Por enquanto a senha é salva sem criptografia. O login vem depois.</span>
+        }
+      </div>
+
+      @if (formError()) { <p class="hint bad" role="alert">{{ formError() }}</p> }
+      @if (justCreated()) { <p class="hint ok" role="status">{{ justCreated() }} foi cadastrado.</p> }
+
+      <button class="btn primary wide" type="submit" [disabled]="saving()">
+        {{ saving() ? 'Salvando…' : 'Cadastrar' }}
+      </button>
+    </form>
+  </div>
+</section>

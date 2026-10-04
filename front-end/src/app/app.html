@@ -1,0 +1,19 @@
+<header class="topbar">
+  <a class="brand" routerLink="/boards" aria-label="Quadro, ir para a lista de quadros">
+    <svg class="mark" viewBox="0 0 22 22" aria-hidden="true">
+      <rect x="2" y="3" width="5" height="16" rx="1.6" />
+      <rect x="8.5" y="3" width="5" height="10" rx="1.6" />
+      <rect x="15" y="3" width="5" height="13" rx="1.6" />
+    </svg>
+    <span class="name">quadro</span>
+  </a>
+
+  <nav aria-label="Principal">
+    <a routerLink="/boards" routerLinkActive="active">Quadros</a>
+    <a routerLink="/users" routerLinkActive="active">Usuários</a>
+  </nav>
+</header>
+
+<main>
+  <router-outlet />
+</main>
